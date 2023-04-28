@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import logo from './Icon.svg';
+import bus from './bus.svg';
+import tram from './tram.svg';
 import stops from './stops.json';
 import trajects from './merged_data.json';
 
@@ -41,6 +43,17 @@ const Map = () => {
         iconAnchor: [16, 16],
     });
 
+    const mybus = L.icon({
+      iconUrl: bus,
+      iconSize: [24, 24],
+      iconAnchor: [16, 16],
+    });
+
+  const mytram = L.icon({
+    iconUrl: tram,
+    iconSize: [24, 24],
+    iconAnchor: [16, 16],
+  });
     /*const polyline = L.polyline([
       [47.21010098, -1.65221959],
       [47.213096, -1.551295],
@@ -48,35 +61,43 @@ const Map = () => {
     ], { color: 'red' }).addTo(mymap);*/
 
     trajects.forEach((t) => {
-      L.polyline(t.shape.geometry.coordinates[0].map(coord => [coord[1], coord[0]]), { color: '#' + t.route_color, weight: 20 }).addTo(mymap)
+      L.polyline(t.shape.geometry.coordinates[0].map(coord => [coord[1], coord[0]]), { color: '#' + t.route_color, weight: 10 }).addTo(mymap)
     });
 
-    stops.forEach((stop) => {
-        const marker = L.marker([stop.stop_lat, stop.stop_lon], {icon: myIcon}).addTo(mymap);
+    trajects.forEach((stop) => {
+        const transport = stop.route_type
+        //const marker = L.marker([stop.stop_lat, stop.stop_lon], {icon: myIcon}).addTo(mymap);
+        stop.arrets.forEach((arret) => {
+          //const bus = L.marker([stop.stop_lat, stop.stop_lon], {icon: mybus}).addTo(mymap);
+          const marker = L.marker([arret.stop_coordinates.lat, arret.stop_coordinates.lon], {icon: transport === 'Bus' ? mybus : mytram}).addTo(mymap);
 
-        const tooltipContent = document.createElement('div');
-        tooltipContent.innerHTML = `
-          <div>
-            <h3>${stop.stop_name}</h3>
-            <p>
-                ${
-                    stop.wheelchair_boarding === "" 
-                        ?   '0 places handicapé disponible'
-                        :   stop.wheelchair_boarding === "1" 
-                                ?   '1 place handicapé disponible'
-                                :   '2 places handicapé disponible'
-                }
-            </p>
-          </div>
-        `;
+          const tooltipContent = document.createElement('div');
+          tooltipContent.innerHTML = `
+            <div>
+              <h3>${arret.stop_name}</h3>
+              <p>
+                  ${
+                      arret.wheelchair_boarding === "" 
+                          ?   '0 places handicapé disponible'
+                          :   arret.wheelchair_boarding === "1" 
+                                  ?   '1 place handicapé disponible'
+                                  :   '2 places handicapé disponible'
+                  }
+              </p>
+            </div>
+          `;
 
-        const tooltip = L.tooltip({
-            permanent: false,
-            direction: 'top',
-            opacity: 0.8,
-            offset: [0, -20]
-        }).setContent(tooltipContent);
-        marker.bindTooltip(tooltip);
+          const tooltip = L.tooltip({
+              permanent: false,
+              direction: 'top',
+              opacity: 0.8,
+              offset: [0, -20]
+          }).setContent(tooltipContent);
+
+          marker.bindTooltip(tooltip);
+          //bus.bindTooltip(tooltip);
+          //tram.bindTooltip(tooltip);
+        });
     });
 
     // nettoyage de la carte lors de la destruction du composant
