@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import logo from './Icon.svg';
 import stops from './stops.json';
+import trajects from './merged_data.json';
 
 const Map = () => {
 
@@ -38,6 +39,16 @@ const Map = () => {
         iconUrl: logo,
         iconSize: [24, 24],
         iconAnchor: [16, 16],
+    });
+
+    /*const polyline = L.polyline([
+      [47.21010098, -1.65221959],
+      [47.213096, -1.551295],
+      [47.204292, -1.564521]
+    ], { color: 'red' }).addTo(mymap);*/
+
+    trajects.forEach((t) => {
+      L.polyline(t.shape.geometry.coordinates[0].map(coord => [coord[1], coord[0]]), { color: '#' + t.route_color, weight: 20 }).addTo(mymap)
     });
 
     stops.forEach((stop) => {
